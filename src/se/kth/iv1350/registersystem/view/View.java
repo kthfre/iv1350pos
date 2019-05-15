@@ -2,6 +2,9 @@ package se.kth.iv1350.registersystem.view;
 
 import se.kth.iv1350.registersystem.controller.*;
 import se.kth.iv1350.registersystem.dbhandler.*;
+import se.kth.iv1350.registersystem.model.ItemQuantityException;
+import se.kth.iv1350.registersystem.utils.ErrorMessageHandler;
+
 import java.util.Scanner;
 
 /**
@@ -19,6 +22,7 @@ public class View {
 
     public View(Controller ctrl) {
         this.ctrl = ctrl;
+        ctrl.addRegisterObserver(new TotalRevenueView());
     }
 
     /**
@@ -31,6 +35,7 @@ public class View {
         SaleDTO item = null;
         String input;
         String[] itemInput;
+        ErrorMessageHandler errorMessageHandler = new ErrorMessageHandler();
         String isDone = "(?i)^\\s*done\\s*$";
         String showLogs = "(?i)^\\s*(show|logs)\\s*$";
         String nextSale = "(?i)^\\s*(next|sale)\\s*$";
@@ -47,7 +52,7 @@ public class View {
 
         while (!ctrl.interpretInput(input, isDone)) {
             if (ctrl.interpretInput(input, isItemIdentifier)) {
-                itemInput = splitItemQuantifier(input);
+                /*itemInput = splitItemQuantifier(input);
                 int quantity = itemInput.length == 2 ? Integer.parseInt(itemInput[1]) : 1;
                 item = ctrl.scanItem(quantity, itemInput[0]);
 
@@ -57,6 +62,22 @@ public class View {
                     System.out.printf("%s. Price: %.2f incl VAT. Total price: %.2f.\n",
                             item.getDescription(), item.getPrice(), item.getRunningTotal());
                     System.out.println("Enter new item (123, 123;3 etc), or \"done\":");
+                } */
+
+                try {
+                    itemInput = splitItemQuantifier(input);
+                    int quantity = itemInput.length == 2 ? Integer.parseInt(itemInput[1]) : 1;
+                    item = ctrl.scanItem(quantity, itemInput[0]);
+
+                    System.out.printf("%s. Price: %.2f incl VAT. Total price: %.2f.\n",
+                            item.getDescription(), item.getPrice(), item.getRunningTotal());
+                    System.out.println("Enter new item (123, 123;3 etc), or \"done\":");
+                } catch (GeneralFailureException e) {
+                    errorMessageHandler.printError("The operation failed with reason: " + e.getMessage() + ". Please try again.");
+                }
+                catch (Exception e) {
+                    errorMessageHandler.printError("Connectivity issues. Please try again later. Exiting.");
+                    return;
                 }
             } else {
                 System.out.println("Cashier appears to have indelicate fingers, please enter a valid item identifier (123, 123;3 for optional quantity, etc).");
@@ -111,7 +132,7 @@ public class View {
                 System.out.println("Show me the money! (250, 250.xx for pennies, etc)");
                 input = readInput(inData);
             }
-            System.out.printf("\n INP %s", input);
+
             item = ctrl.pay(Double.parseDouble(input));
 
             if (item.getChange() < 0) {
@@ -153,7 +174,7 @@ public class View {
         return text + offset;
     }
 
-    private String toTwoDec(double num) {
+    static String toTwoDec(double num) {
         String[] separatedNumber = Double.toString(num).split("\\.");
         StringBuilder twoDecimalRepresentation = new StringBuilder(separatedNumber[0] + ".");
 

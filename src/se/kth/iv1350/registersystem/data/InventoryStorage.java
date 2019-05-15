@@ -7,14 +7,29 @@ import se.kth.iv1350.registersystem.dbhandler.InventoryDTO;
  */
 
 public class InventoryStorage {
+    private static final InventoryStorage INVENTORY_STORAGE = new InventoryStorage();
     private Store[] store;
 
     /**
      * Creates a new InventoryStorage instance and populates storage with sample data.
      */
 
-    public InventoryStorage() {
+ /*   public InventoryStorage() {
         this.store = simulateInventory();
+    } */
+
+    private InventoryStorage() {
+        this.store = simulateInventory();
+    }
+
+    /**
+     * Gets the current InventoryStorage instance.
+     *
+     * @return the current InventoryStorage instance.
+     */
+
+    public static InventoryStorage getInventoryStorage() {
+        return INVENTORY_STORAGE;
     }
 
     private class Store {

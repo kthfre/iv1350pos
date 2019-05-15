@@ -3,7 +3,10 @@ package se.kth.iv1350.registersystem.controller;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
+import se.kth.iv1350.registersystem.dbhandler.DataRetrievalException;
+import se.kth.iv1350.registersystem.dbhandler.InventoryException;
 import se.kth.iv1350.registersystem.dbhandler.SaleDTO;
+import se.kth.iv1350.registersystem.model.ItemQuantityException;
 
 import static org.junit.Assert.*;
 
@@ -26,26 +29,31 @@ public class ControllerTest {
     @Test
     public void testInvalidAndZeroItemsInitiateSale() {
         ctrl.initiateSale();
-        item = ctrl.scanItem(0, "abc123");
-        assertEquals(item.getRunningTotal(), 0, 0.01);
+
+        try {
+            item = ctrl.scanItem(0, "abc123");
+            fail("No exception thrown despite invalid identifier.");
+        } catch (GeneralFailureException e) {
+            assertEquals(e.getMessage(), "item not found");
+        }
     }
 
     @Test
-    public void testDescriptionOneExistingScanItem() {
+    public void testDescriptionOneExistingScanItem() throws GeneralFailureException {
         item = ctrl.scanItem(1, "123");
         assertEquals("Description not matching.", "Great book!", item.getDescription());
         // total assertEquals()
     }
 
     @Test
-    public void testPriceOneExistingScanItem() {
+    public void testPriceOneExistingScanItem() throws GeneralFailureException {
         item = ctrl.scanItem(1, "123");
         assertEquals(21.00 * 1.06, item.getPrice(), 0.01);
         // total assertEquals()
     }
 
     @Test
-    public void testDescriptionMultipleExistingScanItem() {
+    public void testDescriptionMultipleExistingScanItem() throws GeneralFailureException {
         item = ctrl.scanItem(5, "321");
         assertEquals("Description not matching.", "Tomato soup", item.getDescription());
         assertEquals(39.99 * 1.12, item.getPrice(), 0.01);
@@ -53,112 +61,153 @@ public class ControllerTest {
     }
 
     @Test
-    public void testPriceMultipleExistingScanItem() {
+    public void testPriceMultipleExistingScanItem() throws GeneralFailureException {
         item = ctrl.scanItem(5, "321");
         assertEquals(39.99 * 1.12, item.getPrice(), 0.01);
-        // total assertEquals()
     }
 
     @Test
     public void testDescriptionOneRightFormatNonExistingScanItem() {
-        item = ctrl.scanItem(1, "999");
-        assertEquals("Description not matching.", "Invalid item identifier or quantity.", item.getDescription());
-        // total assertEquals()
+        try {
+            item = ctrl.scanItem(1, "999");
+            fail("No exception thrown despite invalid identifier.");
+        } catch (GeneralFailureException e) {
+            assertEquals(e.getMessage(), "item not found");
+        }
     }
 
     @Test
     public void testPriceOneRightFormatNonExistingScanItem() {
-        item = ctrl.scanItem(1, "999");
-        assertEquals(0, item.getPrice(), 0.01);
-        // total assertEquals()
+        try {
+            item = ctrl.scanItem(1, "999");
+            fail("No exception thrown despite invalid identifier.");
+        } catch (GeneralFailureException e) {
+            assertEquals(e.getMessage(), "item not found");
+        }
     }
 
     @Test
     public void testDescriptionOneWrongFormatNonExistingScanItem() {
-        item = ctrl.scanItem(1, "Johan");
-        assertEquals("Description not matching.", "Invalid item identifier or quantity.", item.getDescription());
-        // total assertEquals()
+        try {
+            item = ctrl.scanItem(1, "Johan");
+            fail("No exception thrown despite invalid identifier.");
+        } catch (GeneralFailureException e) {
+            assertEquals(e.getMessage(), "item not found");
+        }
     }
 
     @Test
     public void testPriceOneWrongFormatNonExistingScanItem() {
-        item = ctrl.scanItem(1, "Johan");
-        assertEquals(0, item.getPrice(), 0.01);
-        // total assertEquals()
+        try {
+            item = ctrl.scanItem(1, "Johan");
+            fail("No exception thrown despite invalid identifier.");
+        } catch (GeneralFailureException e) {
+            assertEquals(e.getMessage(), "item not found");
+        }
     }
 
     @Test
     public void testDescriptionMultipleRightFormatNonExistingScanItem() {
-        item = ctrl.scanItem(9, "999");
-        assertEquals("Description not matching.", "Invalid item identifier or quantity.", item.getDescription());
-        // total assertEquals()
+        try {
+            item = ctrl.scanItem(9, "999");
+            fail("No exception thrown despite invalid identifier.");
+        } catch (GeneralFailureException e) {
+            assertEquals(e.getMessage(), "item not found");
+        }
     }
 
     @Test
     public void testPriceMultipleRightFormatNonExistingScanItem() {
-        item = ctrl.scanItem(9, "999");
-        assertEquals(0, item.getPrice(), 0.01);
-        // total assertEquals()
+        try {
+            item = ctrl.scanItem(9, "999");
+            fail("No exception thrown despite invalid identifier.");
+        } catch (GeneralFailureException e) {
+            assertEquals(e.getMessage(), "item not found");
+        }
     }
 
     @Test
     public void testDescriptionMultipleWrongFormatNonExistingScanItem() {
-        item = ctrl.scanItem(7, "Johanna39");
-        assertEquals("Description not matching.", "Invalid item identifier or quantity.", item.getDescription());
-        // total assertEquals()
+        try {
+            item = ctrl.scanItem(7, "Johanna39");
+            fail("No exception thrown despite invalid identifier.");
+        } catch (GeneralFailureException e) {
+            assertEquals(e.getMessage(), "item not found");
+        }
     }
 
     @Test
     public void testPriceMultipleWrongFormatNonExistingScanItem() {
-        item = ctrl.scanItem(7, "Johanna39");
-        assertEquals(0, item.getPrice(), 0.01);
-        // total assertEquals()
+        try {
+            item = ctrl.scanItem(7, "Johanna39");
+            fail("No exception thrown despite invalid identifier.");
+        } catch (GeneralFailureException e) {
+            assertEquals(e.getMessage(), "item not found");
+        }
     }
 
     @Test
     public void testDescriptionEmptyIdentifierScanItem() {
-        item = ctrl.scanItem(1, "");
-        assertEquals("Description not matching.", "Invalid item identifier or quantity.", item.getDescription());
-        // total assertEquals()
+        try {
+            item = ctrl.scanItem(1, "");
+            fail("No exception thrown despite invalid identifier.");
+        } catch (GeneralFailureException e) {
+            assertEquals(e.getMessage(), "item not found");
+        }
     }
 
     @Test
     public void testPriceEmptyIdentifierScanItem() {
-        item = ctrl.scanItem(1, "");
-        assertEquals(0, item.getPrice(), 0.01);
-        // total assertEquals()
+        try {
+            item = ctrl.scanItem(1, "");
+            fail("No exception thrown despite invalid identifier.");
+        } catch (GeneralFailureException e) {
+            assertEquals(e.getMessage(), "item not found");
+        }
     }
 
     @Test
     public void testDescriptionZeroItemsExistingScanItem() {
-        item = ctrl.scanItem(0, "123");
-        assertEquals("Description not matching.", "Invalid item identifier or quantity.", item.getDescription());
-        // total assertEquals()
+        try {
+            item = ctrl.scanItem(0, "123");
+            fail("No exception thrown despite invalid identifier.");
+        } catch (GeneralFailureException e) {
+            assertEquals(e.getMessage(), "faulty quantity");
+        }
     }
 
     @Test
     public void testPriceZeroItemsExistingScanItem() {
-        item = ctrl.scanItem(0, "123");
-        assertEquals(0, item.getPrice(), 0.01);
-        // total assertEquals()
+        try {
+            item = ctrl.scanItem(0, "123");
+            fail("No exception thrown despite invalid identifier.");
+        } catch (GeneralFailureException e) {
+            assertEquals(e.getMessage(), "faulty quantity");
+        }
     }
 
     @Test
     public void testDescriptionZeroItemsNonExistingScanItem() {
-        item = ctrl.scanItem(0, "999");
-        assertEquals("Description not matching.", "Invalid item identifier or quantity.", item.getDescription());
-        // total assertEquals()
+        try {
+            item = ctrl.scanItem(0, "999");
+            fail("No exception thrown despite invalid identifier.");
+        } catch (GeneralFailureException e) {
+            assertEquals(e.getMessage(), "item not found");
+        }
     }
 
     @Test
     public void testPriceZeroItemsNonExistingScanItem() {
-        item = ctrl.scanItem(0, "999");
-        assertEquals(0, item.getPrice(), 0.01);
-        // total assertEquals()
+        try {
+            item = ctrl.scanItem(0, "999");
+            fail("No exception thrown despite invalid identifier.");
+        } catch (GeneralFailureException e) {
+            assertEquals(e.getMessage(), "item not found");
+        }
     }
 
     @Test
-    public void testRunningTotalSingleItemDiscountExistingCustomerApplyDiscount() {
+    public void testRunningTotalSingleItemDiscountExistingCustomerApplyDiscount() throws GeneralFailureException {
         double total = 39.99 * 1.12 + 21.00 * 1.06 + 4.99 * 1.25;
         ctrl.scanItem(1, "321");
         ctrl.scanItem(1, "123");
@@ -168,7 +217,7 @@ public class ControllerTest {
     }
 
     @Test
-    public void testDiscountedTotalSingleItemDiscountExistingCustomerApplyDiscount() {
+    public void testDiscountedTotalSingleItemDiscountExistingCustomerApplyDiscount() throws GeneralFailureException {
         double total = ((39.99 * 1.12) * 0.90) + 21.00 * 1.06 + 4.99 * 1.25;
         ctrl.scanItem(1, "321");
         ctrl.scanItem(1, "123");
@@ -178,7 +227,7 @@ public class ControllerTest {
     }
 
     @Test
-    public void testDiscountTypeSingleItemDiscountExistingCustomerApplyDiscount() {
+    public void testDiscountTypeSingleItemDiscountExistingCustomerApplyDiscount() throws GeneralFailureException {
         ctrl.scanItem(1, "321");
         ctrl.scanItem(1, "123");
         ctrl.scanItem(1, "222");
@@ -187,7 +236,7 @@ public class ControllerTest {
     }
 
     @Test
-    public void testRunningTotalNumberOfItemsDiscountExistingCustomerApplyDiscount() {
+    public void testRunningTotalNumberOfItemsDiscountExistingCustomerApplyDiscount() throws GeneralFailureException {
         double total = 1 * 39.99 * 1.12 + 3 * 21.00 * 1.06 + 6 * 4.99 * 1.25;
         ctrl.scanItem(1, "321");
         ctrl.scanItem(3, "123");
@@ -197,7 +246,7 @@ public class ControllerTest {
     }
 
     @Test
-    public void testDiscountedTotalNumberOfItemsDiscountExistingCustomerApplyDiscount() {
+    public void testDiscountedTotalNumberOfItemsDiscountExistingCustomerApplyDiscount() throws GeneralFailureException {
         double total = (1 * 39.99 * 1.12 + 3 * 21.00 * 1.06 + 6 * 4.99 * 1.25) * 0.85;
         ctrl.scanItem(1, "321");
         ctrl.scanItem(3, "123");
@@ -207,7 +256,7 @@ public class ControllerTest {
     }
 
     @Test
-    public void testDiscountTypeNumberOfItemsDiscountExistingCustomerApplyDiscount() {
+    public void testDiscountTypeNumberOfItemsDiscountExistingCustomerApplyDiscount() throws GeneralFailureException {
         ctrl.scanItem(1, "321");
         ctrl.scanItem(3, "123");
         ctrl.scanItem(6, "222");
@@ -216,7 +265,7 @@ public class ControllerTest {
     }
 
     @Test
-    public void testRunningTotalTotalAmountDiscountExistingCustomerApplyDiscount() {
+    public void testRunningTotalTotalAmountDiscountExistingCustomerApplyDiscount() throws GeneralFailureException {
         double total = 3 * 39.99 * 1.12 + 3 * 21.00 * 1.06 + 4 * 4.99 * 1.25;
         ctrl.scanItem(3, "321");
         ctrl.scanItem(3, "123");
@@ -226,7 +275,7 @@ public class ControllerTest {
     }
 
     @Test
-    public void testDiscountedTotalTotalAmountDiscountExistingCustomerApplyDiscount() {
+    public void testDiscountedTotalTotalAmountDiscountExistingCustomerApplyDiscount() throws GeneralFailureException {
         double total = (3 * 39.99 * 1.12 + 3 * 21.00 * 1.06 + 4 * 4.99 * 1.25) * 0.80;
         ctrl.scanItem(3, "321");
         ctrl.scanItem(3, "123");
@@ -236,7 +285,7 @@ public class ControllerTest {
     }
 
     @Test
-    public void testDiscountTypeTotalAmountDiscountExistingCustomerApplyDiscount() {
+    public void testDiscountTypeTotalAmountDiscountExistingCustomerApplyDiscount() throws GeneralFailureException {
         ctrl.scanItem(3, "321");
         ctrl.scanItem(3, "123");
         ctrl.scanItem(4, "222");
@@ -245,7 +294,7 @@ public class ControllerTest {
     }
 
     @Test
-    public void testDiscountedTotalTotalAmountDiscountDetermineSuperiorAvaiableDiscountExistingCustomerApplyDiscount() {
+    public void testDiscountedTotalTotalAmountDiscountDetermineSuperiorAvaiableDiscountExistingCustomerApplyDiscount() throws GeneralFailureException {
         double total = (5 * 39.99 * 1.12 + 3 * 21.00 * 1.06 + 4 * 4.99 * 1.25) * 0.70;
         ctrl.scanItem(5, "321");
         ctrl.scanItem(3, "123");
@@ -255,7 +304,7 @@ public class ControllerTest {
     }
 
     @Test
-    public void testThresholdNotMetExistingCustomerApplyDiscount() {
+    public void testThresholdNotMetExistingCustomerApplyDiscount() throws GeneralFailureException {
         ctrl.scanItem(3, "123");
         ctrl.scanItem(4, "222");
         item = ctrl.applyDiscount("0303030303");
@@ -263,7 +312,7 @@ public class ControllerTest {
     }
 
     @Test
-    public void testNonExistingCustomerApplyDiscount() {
+    public void testNonExistingCustomerApplyDiscount() throws GeneralFailureException {
         ctrl.scanItem(3, "123");
         ctrl.scanItem(4, "222");
         item = ctrl.applyDiscount("0505050505");
@@ -271,7 +320,7 @@ public class ControllerTest {
     }
 
     @Test
-    public void testSufficientAmountPay() {
+    public void testSufficientAmountPay() throws GeneralFailureException {
         double total = 3 * 39.99 * 1.12 + 3 * 21.00 * 1.06 + 4 * 4.99 * 1.25;
         ctrl.scanItem(3, "321");
         ctrl.scanItem(3, "123");
@@ -281,7 +330,7 @@ public class ControllerTest {
     }
 
     @Test
-    public void testInsufficientAmountPay() {
+    public void testInsufficientAmountPay() throws GeneralFailureException {
         double total = 3 * 39.99 * 1.12 + 3 * 21.00 * 1.06 + 4 * 4.99 * 1.25;
         ctrl.scanItem(3, "321");
         ctrl.scanItem(3, "123");
@@ -291,7 +340,7 @@ public class ControllerTest {
     }
 
     @Test
-    public void testNoAmountPay() {
+    public void testNoAmountPay() throws GeneralFailureException {
         double total = 3 * 39.99 * 1.12 + 3 * 21.00 * 1.06 + 4 * 4.99 * 1.25;
         ctrl.scanItem(3, "321");
         ctrl.scanItem(3, "123");
@@ -301,7 +350,7 @@ public class ControllerTest {
     }
 
     @Test
-    public void testDiscountTooLowAmountThenQuitPay() {
+    public void testDiscountTooLowAmountThenQuitPay() throws GeneralFailureException {
         double total = 3 * 21 * 1.06 * 0.90;
         ctrl.scanItem(3, "123");
         ctrl.applyDiscount("0101010101");
@@ -310,7 +359,7 @@ public class ControllerTest {
     }
 
     @Test
-    public void testExistingRetrieveLog() {
+    public void testExistingRetrieveLog() throws GeneralFailureException {
         double total = 3 * 39.99 * 1.12 + 3 * 21.00 * 1.06 + 4 * 4.99 * 1.25;
         ctrl.scanItem(3, "321");
         ctrl.scanItem(3, "123");
@@ -334,7 +383,7 @@ public class ControllerTest {
     }
 
     @Test
-    public void testNonExistingRetrieveLog() {
+    public void testNonExistingRetrieveLog() throws GeneralFailureException {
         ctrl.scanItem(3, "321");
         ctrl.scanItem(3, "123");
         ctrl.scanItem(4, "222");
@@ -357,7 +406,7 @@ public class ControllerTest {
     }
 
     @Test
-    public void testNegativeIndexRetrieveLog() {
+    public void testNegativeIndexRetrieveLog() throws GeneralFailureException {
         ctrl.scanItem(3, "321");
         ctrl.scanItem(3, "123");
         ctrl.scanItem(4, "222");
@@ -380,7 +429,7 @@ public class ControllerTest {
     }
 
     @Test
-    public void testRetrieveLogCount() {
+    public void testRetrieveLogCount() throws GeneralFailureException {
         ctrl.scanItem(3, "321");
         ctrl.scanItem(3, "123");
         ctrl.scanItem(4, "222");
@@ -411,5 +460,65 @@ public class ControllerTest {
     public void testNonMatchingStringsInterpretInput() {
         String testString = "testString4321";
         assertFalse("Unexpected return value (false) despite equal strings.", ctrl.interpretInput("testString321", testString));
+    }
+
+    @Test
+    public void testSqlTimeoutInventoryQuery() throws GeneralFailureException {
+        try {
+            ctrl.scanItem(1,  "555");
+            fail("Sql time out not causing appropriate exception");
+        } catch (FatalException e) {
+            assertNull(e.getMessage());
+        }
+    }
+
+    @Test
+    public void testSqlNoTimeoutInventoryQuery() throws GeneralFailureException {
+        try {
+            item = ctrl.scanItem(1,  "123");
+            assertEquals(item.getRunningTotal(), 21 * 1.06, 0.01);
+        } catch (DataRetrievalException e) {
+            fail("Sql time out exception thrown when no time out occured.");
+        }
+    }
+
+    @Test
+    public void testNotExistingInventoryQuery() {
+        try {
+            ctrl.scanItem(1,  "333");
+            fail("Query for non-existing inventory not causing appropriate exception");
+        } catch (GeneralFailureException e) {
+            assertEquals(e.getMessage(), "item not found");
+        }
+    }
+
+    @Test
+    public void testExistingInventoryQuery() {
+        try {
+            item = ctrl.scanItem(1,  "123");
+            assertEquals(item.getRunningTotal(), 21 * 1.06, 0.01);
+        } catch (GeneralFailureException e) {
+            fail("Exception wrongly thrown whehn query for existing inventory occurs.");
+        }
+    }
+
+    @Test
+    public void testFaultyQuantity() {
+        try {
+            ctrl.scanItem(0,  "123");
+            fail("Attempting to register 0 quantity of an item not causing appropriate exception");
+        } catch (GeneralFailureException e) {
+            assertEquals(e.getMessage(), "faulty quantity");
+        }
+    }
+
+    @Test
+    public void testValidQuantity() {
+        try {
+            item = ctrl.scanItem(1,  "123");
+            assertEquals(item.getRunningTotal(), 1.06 * 21, 0.01);
+        } catch (GeneralFailureException e) {
+            fail("Valid quantity causes exception to be wrongly thrown.");
+        }
     }
 }

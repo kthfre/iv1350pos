@@ -36,7 +36,7 @@ public class SaleLogTest {
     }
 
     @Test
-    public void testWithItemsUnpaidSaleLogSale() {
+    public void testWithItemsUnpaidSaleLogSale() throws ItemQuantityException {
         this.sale = new Sale();
         sale.registerItem(3, new InventoryDTO(21, 6.0, "123", "Great book"));
         sale.registerItem(2, new InventoryDTO(39.99, 12.0, "321", "Tomato soup"));

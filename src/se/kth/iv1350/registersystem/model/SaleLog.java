@@ -53,7 +53,7 @@ class SaleLog {
             }
         }
 
-        return new SaleDTO(log.sale.getReceipt());
+        return new SaleDTO.Builder().fromReceipt(log.sale.getReceipt()).build();
     }
 
     int retrieveLogCount() {

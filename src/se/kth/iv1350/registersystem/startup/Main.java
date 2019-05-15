@@ -1,6 +1,7 @@
 package se.kth.iv1350.registersystem.startup;
 
 import se.kth.iv1350.registersystem.controller.Controller;
+import se.kth.iv1350.registersystem.dbhandler.SaleDTO;
 import se.kth.iv1350.registersystem.view.View;
 import java.util.Scanner;
 

@@ -33,14 +33,19 @@ public class RegisterTest {
     }
 
     @Test
-    public void testInitiateSale() {
+    public void testInitiateSale() throws ItemQuantityException {
         register.initiateSale();
-        item = register.registerItem(1, null);
-        assertEquals(0, item.getRunningTotal(), 0.01);
+
+        try {
+            item = register.registerItem(0, null);
+            fail("Invalid quantity doesn't throw appropriate exception");
+        } catch (ItemQuantityException e) {
+            assertEquals(e.getQuantity(), 0);;
+        }
     }
 
     @Test
-    public void testValidQuantityExistingItemRegisterItem() {
+    public void testValidQuantityExistingItemRegisterItem() throws ItemQuantityException {
         register.initiateSale();
         item = register.registerItem(2, new InventoryDTO(21.00, 6.00, "123", "Great book!"));
         assertEquals(44.52, item.getRunningTotal(), 0.01);
@@ -49,12 +54,17 @@ public class RegisterTest {
     @Test
     public void testNegativeQuantityNonExistingItemRegisterItem() {
         register.initiateSale();
-        item = register.registerItem(-999, null);
-        assertEquals("Invalid item identifier or quantity.", item.getDescription());
+
+        try {
+            item = register.registerItem(-999, null);
+            fail("Exception not thrown despite big negative quantifier");
+        } catch (ItemQuantityException e) {
+            assertEquals(e.getQuantity(), -999);
+        }
     }
 
     @Test
-    public void testSelectsMostFavorableDiscountPerItemDiscountApplyDiscount() {
+    public void testSelectsMostFavorableDiscountPerItemDiscountApplyDiscount() throws ItemQuantityException {
         discounts = new CustomerDiscountDTO[] {new CustomerDiscountDTO("0202020202", 1, 123, 11),
                 new CustomerDiscountDTO("0202020202", 2, 10, 10), new CustomerDiscountDTO("0202020202", 3, 150, 10)};
         register.initiateSale();
@@ -65,7 +75,7 @@ public class RegisterTest {
     }
 
     @Test
-    public void testSelectsMostFavorableDiscountNumberOfItemsDiscountApplyDiscount() {
+    public void testSelectsMostFavorableDiscountNumberOfItemsDiscountApplyDiscount() throws ItemQuantityException {
         discounts = new CustomerDiscountDTO[] {new CustomerDiscountDTO("0202020202", 1, 123, 12),
                 new CustomerDiscountDTO("0202020202", 2, 10, 11), new CustomerDiscountDTO("0202020202", 3, 150, 10)};
         register.initiateSale();
@@ -76,7 +86,7 @@ public class RegisterTest {
     }
 
     @Test
-    public void testSelectsMostFavorableDiscountTotalAmountDiscountApplyDiscount() {
+    public void testSelectsMostFavorableDiscountTotalAmountDiscountApplyDiscount() throws ItemQuantityException {
         discounts = new CustomerDiscountDTO[] {new CustomerDiscountDTO("0202020202", 1, 123, 12),
                 new CustomerDiscountDTO("0202020202", 2, 10, 10), new CustomerDiscountDTO("0202020202", 3, 150 ,11)};
         register.initiateSale();
@@ -87,7 +97,7 @@ public class RegisterTest {
     }
 
     @Test
-    public void testWithoutDiscountSubmitPayment() {
+    public void testWithoutDiscountSubmitPayment() throws ItemQuantityException {
         double total = 21 * 1.06 * 9 + 4.99 * 1.25 * 3;
         register.initiateSale();
         register.registerItem(9, new InventoryDTO(21.00, 6.0, "123", "Great book!"));
@@ -97,7 +107,7 @@ public class RegisterTest {
     }
 
     @Test
-    public void testWithDiscountSubmitPayment() {
+    public void testWithDiscountSubmitPayment() throws ItemQuantityException {
         double total = (21 * 1.06 * 9 + 4.99 * 1.25 * 3) * 0.89;
         discounts = new CustomerDiscountDTO[] {new CustomerDiscountDTO("0202020202", 1, 123, 12),
                 new CustomerDiscountDTO("0202020202", 2, 10, 10), new CustomerDiscountDTO("0202020202", 3, 150, 11)};
@@ -110,7 +120,7 @@ public class RegisterTest {
     }
 
     @Test
-    public void testWithoutSufficientPaymentLogSale() {
+    public void testWithoutSufficientPaymentLogSale() throws ItemQuantityException {
         register.initiateSale();
         register.registerItem(9, new InventoryDTO(21.00, 6.0, "123", "Great book!"));
         register.registerItem(3, new InventoryDTO(4.99, 25.0, "222", "Premium pen"));
@@ -125,7 +135,7 @@ public class RegisterTest {
     }
 
     @Test
-    public void testSecondLastSuccessfulPurchaceRetrieveLog() {
+    public void testSecondLastSuccessfulPurchaceRetrieveLog() throws ItemQuantityException {
         register.initiateSale();
         register.registerItem(9, new InventoryDTO(21.00, 6.0, "123", "Great book!"));
         register.registerItem(3, new InventoryDTO(4.99, 25.0, "222", "Premium pen"));
@@ -144,7 +154,7 @@ public class RegisterTest {
     }
 
     @Test
-    public void testOneFailedPaymentRetrieveLogCount() {
+    public void testOneFailedPaymentRetrieveLogCount() throws ItemQuantityException {
         register.initiateSale();
         register.registerItem(9, new InventoryDTO(21.00, 6.0, "123", "Great book!"));
         register.registerItem(3, new InventoryDTO(4.99, 25.0, "222", "Premium pen"));
@@ -163,7 +173,7 @@ public class RegisterTest {
     }
 
     @Test
-    public void testWithOneFailedPaymentGetBalance() {
+    public void testWithOneFailedPaymentGetBalance() throws ItemQuantityException {
         double balance = 9 * 21 * 1.06 + 3 * 4.99 * 1.25 + 5 * 21 * 1.06 + 5 * 4.99 * 1.25;
         register.initiateSale();
         register.registerItem(9, new InventoryDTO(21.00, 6.0, "123", "Great book!"));
@@ -296,5 +306,27 @@ public class RegisterTest {
         assertFalse("Unexpected return value (true) despite string matching regex pattern.", register.interpretInput(".55", isPayment));
     }
 
+    @Test
+    public void testRegisterItemFaultyQuantity() {
+        register.initiateSale();
 
+        try {
+            register.registerItem(0, new InventoryDTO(21.00, 6.0, "123", "Great book!"));
+            fail("Faulty item doesn't cause appropriate exception to be thrown.");
+        } catch (ItemQuantityException e) {
+            assertEquals(e.getQuantity(), 0);
+        }
+    }
+
+    @Test
+    public void testRegisterItemValidQuantity() {
+        register.initiateSale();
+
+        try {
+            item = register.registerItem(1, new InventoryDTO(21.00, 6.0, "123", "Great book!"));
+            assertEquals(item.getRunningTotal(), 21 * 1.06, 0.01);
+        } catch (ItemQuantityException e) {
+            fail("Faulty item doesn't cause appropriate exception to be thrown.");
+        }
+    }
 }

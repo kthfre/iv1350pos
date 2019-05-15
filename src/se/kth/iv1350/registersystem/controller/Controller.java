@@ -2,6 +2,8 @@ package se.kth.iv1350.registersystem.controller;
 
 import se.kth.iv1350.registersystem.model.*;
 import se.kth.iv1350.registersystem.dbhandler.*;
+import se.kth.iv1350.registersystem.utils.LogHandler;
+import se.kth.iv1350.registersystem.view.TotalRevenueView;
 
 /**
  * The Controller - per default an intermediate layer.
@@ -10,6 +12,7 @@ import se.kth.iv1350.registersystem.dbhandler.*;
 public class Controller {
     private final Register register;
     private final DatabaseHandler db;
+    private final LogHandler log;
 
     /**
      * Creates a new Controller instance combined with a new Register and DatabaseHandler instance. Each Controller object is immutable.
@@ -18,6 +21,7 @@ public class Controller {
     public Controller() {
         this.register = new Register();
         this.db = new DatabaseHandler();
+        this.log = new LogHandler();
     }
 
     /**
@@ -33,11 +37,25 @@ public class Controller {
      *
      * @param quantity The quantity of the inventory to be registered.
      * @param identifier The inventory to be registered. If inventory doesn't exist, null is passed.
+     * @throws FatalException if there is a database time out failure to allow for a clean exit from the unrecoverable exception.
+     * @throws GeneralFailureException if an item identifier for a non-existing item is passed, or an invalid quantity is passed, along with a message.
      * @return An object containing the description and price of the item, as well as the running total of the sale. If quantity is invalid or inventory doesn't exist, returns an object which item description specifies it's invalid.
      */
 
-    public SaleDTO scanItem(int quantity, String identifier) {
-        return register.registerItem(quantity, db.selectFromInventory(identifier));
+    public SaleDTO scanItem(int quantity, String identifier) throws GeneralFailureException {
+        try {
+            return register.registerItem(quantity, db.selectFromInventory(identifier));
+        } catch (InventoryException e) {
+            log.consoleLog(e.getMessage(), e);
+            throw new GeneralFailureException("item not found", e);
+        } catch (ItemQuantityException e) {
+            log.consoleLog(e.getMessage(), e);
+            throw new GeneralFailureException("faulty quantity", e);
+        } catch (DataRetrievalException e) {
+            log.consoleLog("Data retrieval failed, given reason: " + e.getReason() + ".\n" +
+                    "SQL Server " + e.getIp() + ":" + e.getPort() + "; SELECT * FROM Inventory i WHERE i.id = \"" + e.getIdentifier() + "\";", e);
+            throw new FatalException();
+        }
     }
 
     /**
@@ -93,5 +111,15 @@ public class Controller {
 
     public boolean interpretInput(String input, String pattern) {
         return register.interpretInput(input, pattern);
+    }
+
+    /**
+     * Adds observer to list in current Register instance.
+     *
+     * @param totalRevenueView the observer to be added.
+     */
+
+    public void addRegisterObserver(SaleObserver totalRevenueView) {
+        register.attachObserver(totalRevenueView);
     }
 }

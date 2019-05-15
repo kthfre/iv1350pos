@@ -2,6 +2,9 @@ package se.kth.iv1350.registersystem.model;
 
 import se.kth.iv1350.registersystem.dbhandler.*;
 
+import java.util.ArrayList;
+import java.util.List;
+
 /**
  * Register or cashiers system handling required sale related tasks.
  */
@@ -10,6 +13,7 @@ public class Register {
     private double balance = 0;
     private Sale sale;
     private final SaleLog saleLog;
+    private List<SaleObserver> saleObservers = new ArrayList<>();
 
     /**
      * Creates a new Register instance combined with a new instance of SaleLog.
@@ -32,10 +36,11 @@ public class Register {
      *
      * @param quantity The quantity of the item to be registered.
      * @param inventory The inventory details of the item to be registered.
+     * @throws ItemQuantityException once the quantity is invalid, that is once it's less than 1.
      * @return An object containing the description and price of the item, as well as the running total of the sale. If quantity is invalid or inventory doesn't exist, returns an object which item description specifies it's invalid.
      */
 
-    public SaleDTO registerItem(int quantity, InventoryDTO inventory) {
+    public SaleDTO registerItem(int quantity, InventoryDTO inventory) throws ItemQuantityException {
         return sale.registerItem(quantity, inventory);
     }
 
@@ -64,6 +69,7 @@ public class Register {
         if (salePaid) {
             this.balance += amount - saleDetails.getChange();
             logSale();
+            notifyObeservers(amount - saleDetails.getChange());
         }
 
         return saleDetails;
@@ -118,5 +124,21 @@ public class Register {
 
     public boolean interpretInput(String input, String pattern) {
         return input.matches(pattern);
+    }
+
+    /**
+     * Attach an observer to the list of observers to be updated after a sale has been finalized.
+     *
+     * @param observer the observed to be added.
+     */
+
+    public void attachObserver(SaleObserver observer) {
+      saleObservers.add(observer);
+    }
+
+    private void notifyObeservers(double amount) {
+        for (SaleObserver observer : saleObservers) {
+            observer.update(amount);
+        }
     }
 }

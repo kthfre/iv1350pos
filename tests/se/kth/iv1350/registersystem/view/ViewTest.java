@@ -4,6 +4,8 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import se.kth.iv1350.registersystem.controller.Controller;
+import se.kth.iv1350.registersystem.controller.FatalException;
+import se.kth.iv1350.registersystem.controller.GeneralFailureException;
 import se.kth.iv1350.registersystem.dbhandler.SaleDTO;
 
 import java.util.Scanner;
@@ -29,15 +31,20 @@ public class ViewTest {
     }
 
     @Test
-    public void testWithNoItemsQuitSaleCreatedSimulateSale() {
+    public void testWithNoItemsQuitSaleCreatedSimulateSale() throws GeneralFailureException {
         view.simulateSale(new Scanner("done" +
                 "\nquit"));
-        item = ctrl.scanItem(0, null);
-        assertEquals("Invalid item identifier or quantity.", item.getDescription());
+
+        try {
+            item = ctrl.scanItem(0, null);
+            fail("No exception thrown despite 0 quantity and invalid identifier.");
+        } catch (FatalException e) {
+            assertNull(e.getMessage());
+        }
     }
 
     @Test
-    public void testWithNoItemsQuitWithRandomNoiseSaleCreatedSimulateSale() {
+    public void testWithNoItemsQuitWithRandomNoiseSaleCreatedSimulateSale() throws GeneralFailureException {
         view.simulateSale(new Scanner("done" +
                 "\nrandom" +
                 "\nstuff" +
@@ -46,17 +53,27 @@ public class ViewTest {
                 "\n1238302" +
                 "\n123;3" +
                 "\nquit"));
-        item = ctrl.scanItem(0, null);
-        assertEquals("Invalid item identifier or quantity.", item.getDescription());
+
+        try {
+            item = ctrl.scanItem(0, null);
+            fail("No exception thrown despite 0 quantity.");
+        } catch (FatalException e) {
+            assertNull(e.getMessage());
+        }
     }
 
     @Test
-    public void testRealItemIdentifierInvalidQuantifierSimulateSale() {
+    public void testRealItemIdentifierInvalidQuantifierSimulateSale() throws GeneralFailureException {
         view.simulateSale(new Scanner("123;-3" +
                 "\ndone" +
                 "\nq"));
-        item = ctrl.scanItem(0, null);
-        assertEquals("Invalid item identifier or quantity.", item.getDescription());
+
+        try {
+            item = ctrl.scanItem(0, null);
+            fail("No exception thrown despite 0 quantity.");
+        } catch (FatalException e) {
+            assertNull(e.getMessage());
+        }
     }
 
     @Test

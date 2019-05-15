@@ -15,11 +15,11 @@ class Sale {
         this.runningTotal = 0;
     }
 
-    SaleDTO registerItem(int quantity, InventoryDTO inventory) {
+    SaleDTO registerItem(int quantity, InventoryDTO inventory) throws ItemQuantityException {
         Item item = new Item(quantity, inventory);
 
-        if (inventory == null || quantity < 1) {
-            return new SaleDTO("Invalid item identifier or quantity.", 0, runningTotal);
+        if (quantity < 1) {
+            throw new ItemQuantityException(quantity);
         }
 
         int index = indexOfItem(item);
@@ -33,7 +33,7 @@ class Sale {
 
         this.runningTotal += quantity * itemPrice;
 
-        return new SaleDTO(inventory.getDescription(), itemPrice, runningTotal);
+        return new SaleDTO.Builder().description(inventory.getDescription()).price(itemPrice).runningTotal(runningTotal).build();
     }
 
     SaleDTO applyDiscount(CustomerDiscountDTO[] discounts) {
@@ -48,10 +48,10 @@ class Sale {
          this.receipt = new Receipt("IV1350 SuperStore", new Address("Kistagangen", "1350", "Kista"),
                  items, runningTotal, discountedTotal != 0.0d ? discountedTotal : runningTotal, calcTotalVat(), amount, change);
 
-         return new SaleDTO(receipt);
+         return new SaleDTO.Builder().fromReceipt(receipt).build();
      }
 
-        return new SaleDTO(amount - toPay);
+        return new SaleDTO.Builder().change(change).build();
     }
 
     Receipt getReceipt() {
@@ -78,8 +78,6 @@ class Sale {
         int type = discounts.length == 0 ? 0 : -1;
         double lowestPrice = runningTotal,
             discountedPrice = runningTotal;
-
-
 
         for (int i = 0; i < discounts.length; i++) {
             switch (discounts[i].getDiscountType()) {
@@ -118,7 +116,7 @@ class Sale {
         }
 
         this.discountedTotal = lowestPrice;
-        return new SaleDTO(runningTotal, discountedTotal, type);
+        return new SaleDTO.Builder().runningTotal(runningTotal).discountedTotal(discountedTotal).discountType(type).build();
     }
 
     private double calcTotalVat() {
