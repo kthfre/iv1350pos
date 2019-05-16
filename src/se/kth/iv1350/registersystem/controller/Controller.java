@@ -119,7 +119,7 @@ public class Controller {
      * @param totalRevenueView the observer to be added.
      */
 
-    public void addRegisterObserver(SaleObserver totalRevenueView) {
-        register.attachObserver(totalRevenueView);
+    public void addRegisterObserver(SaleObserver observer) {
+        register.attachObserver(observer);
     }
 }
